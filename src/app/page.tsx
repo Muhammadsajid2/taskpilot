@@ -1,3 +1,11 @@
+import { Card, DatePicker, Flex } from "antd";
+
 export default function Home() {
-  return <div>Main Page</div>;
+  return (
+    <Card>
+      <Flex align="center" justify="center">
+        <DatePicker />
+      </Flex>
+    </Card>
+  );
 }

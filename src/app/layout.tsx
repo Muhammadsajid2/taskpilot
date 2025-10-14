@@ -1,13 +1,17 @@
-import "./globals.css";
+// src/app/layout.jsx
 
+import "./globals.css";
+import QueryProvider from "./components/QueryProvider";
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <QueryProvider>{children}</QueryProvider>
+      </body>
     </html>
   );
 }
