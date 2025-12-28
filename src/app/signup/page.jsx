@@ -1,14 +1,15 @@
 "use client";
 
-import { Form, Input, Button, Typography, Flex, Divider, theme } from "antd";
-import { MailOutlined, LockOutlined, GoogleOutlined, GithubOutlined } from "@ant-design/icons";
-import useLogin from "./hooks/useLogin";
+import { Form, Input, Button, Typography, Flex, Divider, Checkbox } from "antd";
+import { MailOutlined, LockOutlined, UserOutlined, GoogleOutlined, GithubOutlined } from "@ant-design/icons";
 import Link from "next/link";
 
 const { Title, Text } = Typography;
 
-export default function LoginForm() {
-  const { onFinish } = useLogin();
+export default function SignupForm() {
+  const onFinish = (values) => {
+    console.log("Signup values:", values);
+  };
 
   return (
     <Flex justify="center" align="center" style={{ minHeight: "100vh", padding: "20px" }}>
@@ -30,17 +31,29 @@ export default function LoginForm() {
             <Title level={4} style={{ margin: 0, color: "white" }}>TP</Title>
           </div>
           <Title level={2} className="gradient-text" style={{ margin: 0 }}>
-            Welcome Back
+            Create Account
           </Title>
-          <Text type="secondary">Sign in to continue to Task Pilot</Text>
+          <Text type="secondary">Join Task Pilot to get started</Text>
         </Flex>
 
         <Form
-          name="login_form"
+          name="signup_form"
           layout="vertical"
           onFinish={onFinish}
           requiredMark={false}
         >
+          <Form.Item
+            label={<Text style={{ color: "var(--text-dim)" }}>Full Name</Text>}
+            name="name"
+            rules={[{ required: true, message: "Please enter your full name!" }]}
+          >
+            <Input
+              prefix={<UserOutlined style={{ color: "var(--text-dim)" }} />}
+              placeholder="John Doe"
+              size="large"
+            />
+          </Form.Item>
+
           <Form.Item
             label={<Text style={{ color: "var(--text-dim)" }}>Email</Text>}
             name="email"
@@ -54,12 +67,7 @@ export default function LoginForm() {
           </Form.Item>
 
           <Form.Item
-            label={
-              <Flex justify="space-between" style={{ width: "100%" }}>
-                <Text style={{ color: "var(--text-dim)" }}>Password</Text>
-                <Link href="#" style={{ fontSize: "12px", color: "var(--primary)" }}>Forgot password?</Link>
-              </Flex>
-            }
+            label={<Text style={{ color: "var(--text-dim)" }}>Password</Text>}
             name="password"
             rules={[{ required: true, message: "Please enter your password!" }]}
           >
@@ -68,6 +76,12 @@ export default function LoginForm() {
               placeholder="••••••••"
               size="large"
             />
+          </Form.Item>
+
+          <Form.Item name="agree" valuePropName="checked" rules={[{ validator:(_, value) => value ? Promise.resolve() : Promise.reject('Please accept the terms') }]}>
+            <Checkbox style={{ color: "var(--text-dim)" }}>
+              I agree to the <Link href="#" style={{ color: "var(--primary)" }}>Terms & Conditions</Link>
+            </Checkbox>
           </Form.Item>
 
           <Form.Item>
@@ -84,13 +98,13 @@ export default function LoginForm() {
                 border: "none"
               }}
             >
-              Log In
+              Sign Up
             </Button>
           </Form.Item>
         </Form>
 
         <Divider plain style={{ borderColor: "rgba(255,255,255,0.1)" }}>
-          <Text style={{ color: "#64748b", fontSize: "12px" }}>OR CONTINUE WITH</Text>
+          <Text style={{ color: "#64748b", fontSize: "12px" }}>OR SIGN UP WITH</Text>
         </Divider>
 
         <Flex gap={12}>
@@ -104,7 +118,7 @@ export default function LoginForm() {
 
         <Flex justify="center" style={{ marginTop: "32px" }}>
           <Text style={{ color: "var(--text-dim)" }}>
-            Don't have an account? <Link href="/signup" style={{ color: "var(--primary)", fontWeight: 600 }}>Sign up</Link>
+            Already have an account? <Link href="/login" style={{ color: "var(--primary)", fontWeight: 600 }}>Log in</Link>
           </Text>
         </Flex>
       </div>
