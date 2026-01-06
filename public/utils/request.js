@@ -4,7 +4,8 @@ import { customNotification, ErrorNotification } from "./notifications";
 
 const UNKNOWN_ERROR =
   "Unknown error, please retry or check internet connection.";
-const baseApiUrl = "http://localhost:3000";
+// const baseApiUrl = "http://localhost:3000";
+const baseApiUrl = "https://nest-rest-api-blush.vercel.app";
 
 const service = axios.create({
   baseURL: baseApiUrl,

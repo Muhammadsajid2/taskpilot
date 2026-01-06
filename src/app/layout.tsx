@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import QueryProvider from "./components/QueryProvider";
-import { ConfigProvider, theme } from "antd";
-// import { AntdRegistry } from "@ant-design/nextjs-registry";
-
+import { App, ConfigProvider, theme } from "antd";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -12,6 +10,10 @@ export const metadata: Metadata = {
   description:
     "Advanced task management with a premium glassmorphic interface.",
 };
+
+import AuthGuard from "./components/AuthGuard";
+
+import AntdGlobalProvider from "./components/AntdGlobalProvider";
 
 export default function RootLayout({
   children,
@@ -43,7 +45,13 @@ export default function RootLayout({
             },
           }}
         >
-          <QueryProvider>{children}</QueryProvider>
+          <App>
+            <AntdGlobalProvider>
+              <QueryProvider>
+                <AuthGuard>{children}</AuthGuard>
+              </QueryProvider>
+            </AntdGlobalProvider>
+          </App>
         </ConfigProvider>
       </body>
     </html>

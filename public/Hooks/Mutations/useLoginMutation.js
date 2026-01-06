@@ -9,17 +9,18 @@ export const useLoginMutation = () => {
     data: loginData,
     status: userLoginStatus,
     error: userLoginError,
-    isLoading: isUserLoginLoading,
+    isPending: isUserLoginLoading,
   } = useMutation({
     mutationFn: (UserRoleData) => loginFn(UserRoleData),
-    onSuccess: () => {
-      customNotification("success", "User Login Successful");
+    onSuccess: (data) => {
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+      }
+      customNotification("Login Successful", "Welcome back to Task Pilot!");
     },
     onError: (error) => {
-      customNotification(
-        "error",
-        `Login Failed: ${error.message || "Unknown error"}`
-      );
+      // The error notification is handled globally by the axios interceptor in request.js
+      console.error("Mutation Error:", error);
     },
   });
 

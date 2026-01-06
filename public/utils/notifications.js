@@ -1,27 +1,43 @@
-import { notification } from 'antd'
+import { notification as staticNotification } from "antd";
+
+let notificationApi = staticNotification;
+
+/**
+ * Sets the notification API instance to be used by the utility.
+ * This allows using the context-aware API from Ant Design's App component.
+ */
+export const setNotificationApi = (api) => {
+  notificationApi = api;
+};
+
 export const logoutNotifications = () => {
-  return notification.success({
-    message: 'Logout Successful',
-    description: 'You have successfully logged out.',
-  })
-}
+  return notificationApi.success({
+    message: "Logout Successful",
+    description: "You have successfully logged out.",
+    placement: "topRight",
+  });
+};
+
 export const logInNotifications = () => {
-  return notification.success({
-    message: 'Login Successful',
-    description: 'You have successfully logged in.',
-  })
-}
+  return notificationApi.success({
+    message: "Login Successful",
+    description: "You have successfully logged in.",
+    placement: "topRight",
+  });
+};
+
 export const customNotification = (message, description) => {
-  return notification.success({
-    message: message,
+  return notificationApi.success({
+    message: message || "Success",
     description: description,
-    placement: 'topRight',
-  })
-}
+    placement: "topRight",
+  });
+};
+
 export const ErrorNotification = (message, description) => {
-  return notification.error({
-    message: message,
+  return notificationApi.error({
+    message: message || "Error",
     description: description,
-    placement: 'topRight',
-  })
-}
+    placement: "topRight",
+  });
+};
