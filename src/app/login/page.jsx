@@ -19,23 +19,23 @@ export default function LoginForm() {
     <Flex
       justify="center"
       align="center"
-      style={{ minHeight: "100vh", padding: "20px" }}
+      style={{ minHeight: "100dvh", padding: "16px" }}
     >
       <div
         className="glass-card animate-slide-up"
-        style={{ width: "100%", maxWidth: "420px", padding: "40px" }}
+        style={{ width: "100%", maxWidth: "400px", padding: "16px 16px" }}
       >
-        <Flex vertical align="center" gap={8} style={{ marginBottom: "32px" }}>
+        <Flex vertical align="center" gap={2} style={{ marginBottom: "12px" }}>
           <div
             style={{
-              width: "48px",
-              height: "48px",
+              width: "40px",
+              height: "40px",
               background: "var(--primary-gradient)",
-              borderRadius: "12px",
+              borderRadius: "10px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              marginBottom: "12px",
+              marginBottom: "4px",
               boxShadow: "0 0 20px rgba(59, 130, 246, 0.5)",
             }}
           >
@@ -43,7 +43,7 @@ export default function LoginForm() {
               TP
             </Title>
           </div>
-          <Title level={2} className="gradient-text" style={{ margin: 0 }}>
+          <Title level={3} className="gradient-text" style={{ margin: 0 }}>
             Welcome Back
           </Title>
           <Text type="secondary">Sign in to continue to Task Pilot</Text>
@@ -54,10 +54,16 @@ export default function LoginForm() {
           layout="vertical"
           onFinish={onFinish}
           requiredMark={false}
+          style={{ marginBottom: "0" }}
         >
           <Form.Item
-            label={<Text style={{ color: "var(--text-dim)" }}>Email</Text>}
+            label={
+              <Text style={{ color: "var(--text-dim)", fontSize: "12px" }}>
+                Email
+              </Text>
+            }
             name="email"
+            style={{ marginBottom: "12px" }}
             rules={[
               {
                 required: true,
@@ -76,16 +82,19 @@ export default function LoginForm() {
           <Form.Item
             label={
               <Flex justify="space-between" style={{ width: "100%" }}>
-                <Text style={{ color: "var(--text-dim)" }}>Password</Text>
+                <Text style={{ color: "var(--text-dim)", fontSize: "12px" }}>
+                  Password
+                </Text>
                 <Link
                   href="#"
-                  style={{ fontSize: "12px", color: "var(--primary)" }}
+                  style={{ fontSize: "11px", color: "var(--primary)" }}
                 >
-                  Forgot password?
+                  Forgot?
                 </Link>
               </Flex>
             }
             name="password"
+            style={{ marginBottom: "16px" }}
             rules={[{ required: true, message: "Please enter your password!" }]}
           >
             <Input.Password
@@ -95,7 +104,7 @@ export default function LoginForm() {
             />
           </Form.Item>
 
-          <Form.Item>
+          <Form.Item style={{ marginBottom: "8px" }}>
             <Button
               type="primary"
               block
@@ -103,9 +112,9 @@ export default function LoginForm() {
               size="large"
               loading={isUserLoginLoading}
               style={{
-                height: "48px",
+                height: "42px",
                 fontWeight: 600,
-                marginTop: "8px",
+                marginTop: "0px",
                 background: "linear-gradient(to right, #3b82f6, #2563eb)",
                 border: "none",
               }}
@@ -115,13 +124,16 @@ export default function LoginForm() {
           </Form.Item>
         </Form>
 
-        <Divider plain style={{ borderColor: "rgba(255,255,255,0.1)" }}>
+        <Divider
+          plain
+          style={{ borderColor: "rgba(255,255,255,0.1)", margin: "8px 0" }}
+        >
           <Text style={{ color: "#64748b", fontSize: "12px" }}>
             OR CONTINUE WITH
           </Text>
         </Divider>
 
-        <Flex gap={12}>
+        <Flex gap={8}>
           <Button
             block
             icon={<GoogleOutlined />}
@@ -146,7 +158,7 @@ export default function LoginForm() {
           </Button>
         </Flex>
 
-        <Flex justify="center" style={{ marginTop: "32px" }}>
+        <Flex justify="center" style={{ marginTop: "12px" }}>
           <Text style={{ color: "var(--text-dim)" }}>
             Don't have an account?{" "}
             <Link

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Layout,
   Menu,
@@ -10,6 +10,7 @@ import {
   Space,
   Typography,
   theme,
+  Grid,
 } from "antd";
 import {
   DashboardOutlined,
@@ -24,13 +25,23 @@ import { usePathname } from "next/navigation";
 
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
+const { useBreakpoint } = Grid;
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [collapsed, setCollapsed] = useState(false);
+  const screens = useBreakpoint();
+  const isMobile = screens.xs;
+
   const pathname = usePathname();
   const {
     token: { colorBgContainer },
   } = theme.useToken();
+
+  useEffect(() => {
+    if (isMobile) {
+      setCollapsed(true);
+    }
+  }, [isMobile, pathname]); // Auto-collapse when pathname changes on mobile
 
   const menuItems = [
     {
@@ -72,10 +83,16 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         trigger={null}
         collapsible
         collapsed={collapsed}
+        collapsedWidth={isMobile ? 0 : 80}
         theme="dark"
         className="glass-card"
         style={{
           borderRight: "1px solid rgba(255, 255, 255, 0.1)",
+          position: isMobile ? "fixed" : "relative",
+          height: "100vh",
+          zIndex: 1001,
+          background: "rgba(15, 23, 42, 0.9)", // Solid dark background consistent with theme
+          backdropFilter: "blur(10px)",
         }}
       >
         <div
@@ -102,7 +119,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           style={{ background: "transparent", borderRight: 0 }}
         />
       </Sider>
-      <Layout>
+      <Layout
+        style={{
+          transition: "all 0.2s",
+        }}
+      >
         <Header
           style={{
             padding: "0 24px",
@@ -113,12 +134,22 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
           }}
         >
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            style={{ fontSize: "16px", width: 64, height: 64 }}
-          />
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <Button
+              type="text"
+              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={() => setCollapsed(!collapsed)}
+              style={{ fontSize: "16px", width: 64, height: 64 }}
+            />
+            {isMobile && collapsed && (
+              <Title
+                level={4}
+                style={{ margin: "0 0 0 16px", color: "var(--primary)" }}
+              >
+                Task Pilot
+              </Title>
+            )}
+          </div>
           <Space size={16}>
             <Dropdown
               menu={{ items: userMenuItems }}
@@ -136,7 +167,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         <Content
           style={{
             margin: "0",
-            padding: 24,
+            padding: isMobile ? 12 : 24,
             minHeight: 280,
             background: "transparent",
             overflow: "initial",
