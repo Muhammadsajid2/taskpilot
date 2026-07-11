@@ -38,3 +38,10 @@ export function updateVideo(id, data) {
     data,
   });
 }
+
+export function deleteVideo(id) {
+  return request({
+    url: `/videos/${id}`,
+    method: "DELETE",
+  });
+}

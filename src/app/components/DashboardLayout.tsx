@@ -22,6 +22,7 @@ import {
   FolderOutlined,
   TagsOutlined,
   VideoCameraOutlined,
+  WalletOutlined,
   MoonOutlined,
   SunOutlined,
 } from "@ant-design/icons";
@@ -77,6 +78,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       icon: <VideoCameraOutlined />,
       label: <Link href="/videos">Videos</Link>,
     },
+    {
+      key: "/khata",
+      icon: <WalletOutlined />,
+      label: <Link href="/khata">Khata</Link>,
+    },
   ];
 
   const userMenuItems = [
@@ -84,6 +90,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       key: "profile",
       icon: <UserOutlined />,
       label: "Profile",
+      onClick: () => {
+        window.location.href = "/profile";
+      },
     },
     {
       type: "divider" as const,
@@ -101,7 +110,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   ];
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
+    <Layout style={{ height: "100vh", overflow: "hidden" }}>
       <Sider
         trigger={null}
         collapsible
@@ -149,6 +158,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       <Layout
         style={{
           transition: "all 0.2s",
+          minWidth: 0,
+          overflow: "hidden",
         }}
       >
         <Header
@@ -159,6 +170,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             alignItems: "center",
             justifyContent: "space-between",
             borderBottom: "1px solid var(--glass-border)",
+            flex: "0 0 64px",
           }}
         >
           <div style={{ display: "flex", alignItems: "center" }}>
@@ -208,9 +220,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           style={{
             margin: "0",
             padding: isMobile ? 12 : 24,
-            minHeight: 280,
             background: "transparent",
-            overflow: "initial",
+            height: "calc(100vh - 64px)",
+            overflowY: "auto",
+            overflowX: "hidden",
           }}
         >
           {children}

@@ -6,6 +6,7 @@ import {
   Card,
   Flex,
   Form,
+  Popconfirm,
   Input,
   Modal,
   Select,
@@ -71,12 +72,14 @@ const LibraryManagementPage = ({
   isCategoryOptionsLoading,
   isSubCategoryOptionsLoading,
   isSavePending,
+  isDeletePending,
   saveError,
   openCreateModal,
   openEditModal,
   closeModal,
   handleSubmit,
   handleCategoryChange,
+  handleDelete,
 }: any) => {
   const isCategoryPage = type === "category";
   const isSubCategoryPage = type === "sub-category";
@@ -112,7 +115,18 @@ const LibraryManagementPage = ({
           title: "Action",
           key: "action",
           render: (_: unknown, record: any) => (
-            <Button onClick={() => openEditModal(record)}>Edit</Button>
+            <Space>
+              <Button onClick={() => openEditModal(record)}>Edit</Button>
+              <Popconfirm
+                title="Delete category?"
+                description="This action cannot be undone."
+                okText="Delete"
+                okButtonProps={{ danger: true, loading: isDeletePending }}
+                onConfirm={() => handleDelete(record)}
+              >
+                <Button danger>Delete</Button>
+              </Popconfirm>
+            </Space>
           ),
         },
       ];
@@ -171,7 +185,18 @@ const LibraryManagementPage = ({
           title: "Action",
           key: "action",
           render: (_: unknown, record: any) => (
-            <Button onClick={() => openEditModal(record)}>Edit</Button>
+            <Space>
+              <Button onClick={() => openEditModal(record)}>Edit</Button>
+              <Popconfirm
+                title="Delete sub category?"
+                description="This action cannot be undone."
+                okText="Delete"
+                okButtonProps={{ danger: true, loading: isDeletePending }}
+                onConfirm={() => handleDelete(record)}
+              >
+                <Button danger>Delete</Button>
+              </Popconfirm>
+            </Space>
           ),
         },
       ];
@@ -244,11 +269,28 @@ const LibraryManagementPage = ({
         title: "Action",
         key: "action",
         render: (_: unknown, record: any) => (
-          <Button onClick={() => openEditModal(record)}>Edit</Button>
+          <Space>
+            <Button onClick={() => openEditModal(record)}>Edit</Button>
+            <Popconfirm
+              title="Delete video?"
+              description="This action cannot be undone."
+              okText="Delete"
+              okButtonProps={{ danger: true, loading: isDeletePending }}
+              onConfirm={() => handleDelete(record)}
+            >
+              <Button danger>Delete</Button>
+            </Popconfirm>
+          </Space>
         ),
       },
     ];
-  }, [isCategoryPage, isSubCategoryPage, openEditModal]);
+  }, [
+    handleDelete,
+    isCategoryPage,
+    isDeletePending,
+    isSubCategoryPage,
+    openEditModal,
+  ]);
 
   const modalTitle = editingRecord
     ? isCategoryPage

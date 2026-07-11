@@ -38,3 +38,10 @@ export function updateSubCategory(id, data) {
     data,
   });
 }
+
+export function deleteSubCategory(id) {
+  return request({
+    url: `/sub-category/${id}`,
+    method: "DELETE",
+  });
+}

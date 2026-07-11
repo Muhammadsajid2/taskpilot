@@ -10,10 +10,17 @@ import {
 } from "../../../public/API/category";
 import {
   createSubCategory,
+  deleteSubCategory,
   getSubCategory,
   updateSubCategory,
 } from "../../../public/API/subCategory";
-import { createVideo, getVideos, updateVideo } from "../../../public/API/video";
+import {
+  createVideo,
+  deleteVideo,
+  getVideos,
+  updateVideo,
+} from "../../../public/API/video";
+import { deleteCategory } from "../../../public/API/category";
 
 const LIST_OPTIONS = {
   page: 1,
@@ -211,12 +218,36 @@ const useLibraryManagementPage = (type: "category" | "sub-category" | "videos") 
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      if (isCategoryPage) return deleteCategory(id);
+      if (isSubCategoryPage) return deleteSubCategory(id);
+      return deleteVideo(id);
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: [type, "list"] });
+
+      if (isCategoryPage) {
+        await queryClient.invalidateQueries({ queryKey: ["categories"] });
+      }
+
+      if (isSubCategoryPage) {
+        await queryClient.invalidateQueries({ queryKey: ["sub-categories"] });
+      }
+    },
+  });
+
   const handleSubmit = (values: any) => {
     saveMutation.mutate(values);
   };
 
   const handleCategoryChange = () => {
     form.setFieldValue("subCategory", []);
+  };
+
+  const handleDelete = (record: any) => {
+    if (!record?._id) return;
+    deleteMutation.mutate(record._id);
   };
 
   return {
@@ -233,11 +264,13 @@ const useLibraryManagementPage = (type: "category" | "sub-category" | "videos") 
     isSubCategoryOptionsLoading: subCategoryQuery.isLoading,
     isSavePending: saveMutation.isPending,
     saveError: saveMutation.error as Error | null,
+    isDeletePending: deleteMutation.isPending,
     openCreateModal,
     openEditModal,
     closeModal,
     handleSubmit,
     handleCategoryChange,
+    handleDelete,
   };
 };
 
