@@ -19,9 +19,15 @@ import {
   LogoutOutlined,
   MenuUnfoldOutlined,
   MenuFoldOutlined,
+  FolderOutlined,
+  TagsOutlined,
+  VideoCameraOutlined,
+  MoonOutlined,
+  SunOutlined,
 } from "@ant-design/icons";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useThemeMode } from "./ThemeProvider";
 
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
@@ -31,10 +37,12 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [collapsed, setCollapsed] = useState(false);
   const screens = useBreakpoint();
   const isMobile = screens.xs;
+  const { themeMode, toggleTheme } = useThemeMode();
+  const isDark = themeMode === "dark";
 
   const pathname = usePathname();
   const {
-    token: { colorBgContainer },
+    token: { colorBgContainer, colorTextBase },
   } = theme.useToken();
 
   useEffect(() => {
@@ -53,6 +61,21 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       key: "/tasks",
       icon: <ProjectOutlined />,
       label: <Link href="/tasks">Tasks</Link>,
+    },
+    {
+      key: "/category",
+      icon: <FolderOutlined />,
+      label: <Link href="/category">Category</Link>,
+    },
+    {
+      key: "/sub-category",
+      icon: <TagsOutlined />,
+      label: <Link href="/sub-category">Sub Category</Link>,
+    },
+    {
+      key: "/videos",
+      icon: <VideoCameraOutlined />,
+      label: <Link href="/videos">Videos</Link>,
     },
   ];
 
@@ -84,14 +107,14 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         collapsible
         collapsed={collapsed}
         collapsedWidth={isMobile ? 0 : 80}
-        theme="dark"
+        theme={isDark ? "dark" : "light"}
         className="glass-card"
         style={{
-          borderRight: "1px solid rgba(255, 255, 255, 0.1)",
+          borderRight: "1px solid var(--glass-border)",
           position: isMobile ? "fixed" : "relative",
           height: "100vh",
           zIndex: 1001,
-          background: "rgba(15, 23, 42, 0.9)", // Solid dark background consistent with theme
+          background: "var(--sidebar-bg)",
           backdropFilter: "blur(10px)",
         }}
       >
@@ -106,13 +129,17 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         >
           <Title
             level={4}
-            style={{ color: "#fff", margin: 0, whiteSpace: "nowrap" }}
+            style={{
+              color: "var(--sidebar-text)",
+              margin: 0,
+              whiteSpace: "nowrap",
+            }}
           >
             {collapsed ? "TP" : "Task Pilot"}
           </Title>
         </div>
         <Menu
-          theme="dark"
+          theme={isDark ? "dark" : "light"}
           mode="inline"
           selectedKeys={[pathname]}
           items={menuItems}
@@ -131,7 +158,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+            borderBottom: "1px solid var(--glass-border)",
           }}
         >
           <div style={{ display: "flex", alignItems: "center" }}>
@@ -139,7 +166,12 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
               type="text"
               icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
               onClick={() => setCollapsed(!collapsed)}
-              style={{ fontSize: "16px", width: 64, height: 64 }}
+              style={{
+                fontSize: "16px",
+                width: 64,
+                height: 64,
+                color: colorTextBase,
+              }}
             />
             {isMobile && collapsed && (
               <Title
@@ -151,6 +183,14 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             )}
           </div>
           <Space size={16}>
+            <Button
+              type="text"
+              shape="circle"
+              size="large"
+              icon={isDark ? <SunOutlined /> : <MoonOutlined />}
+              onClick={toggleTheme}
+              style={{ color: colorTextBase }}
+            />
             <Dropdown
               menu={{ items: userMenuItems }}
               placement="bottomRight"

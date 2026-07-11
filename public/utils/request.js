@@ -1,11 +1,10 @@
 import axios from "axios";
-// import { env } from "../../Constant/env";
+import { env } from "../../Constant/env";
 import { customNotification, ErrorNotification } from "./notifications";
 
 const UNKNOWN_ERROR =
   "Unknown error, please retry or check internet connection.";
-// const baseApiUrl = "http://localhost:3000";
-const baseApiUrl = "https://nest-rest-api-blush.vercel.app";
+const baseApiUrl = env.NEXT_PUBLIC_API_BASE_URL;
 
 const service = axios.create({
   baseURL: baseApiUrl,
