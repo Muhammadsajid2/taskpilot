@@ -47,6 +47,13 @@ const getId = (value: any) => {
   return typeof value === "string" ? value : value._id || "";
 };
 
+const getIds = (value: any) => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.map((item) => getId(item)).filter(Boolean);
+  const id = getId(value);
+  return id ? [id] : [];
+};
+
 const normalizeVideoPayload = (values: any) => ({
   ...values,
   url: values.url
@@ -120,7 +127,7 @@ const useLibraryManagementPage = (type: "category" | "sub-category" | "videos") 
     return items
       .filter((item: any) => {
         if (!selectedCategory) return true;
-        return getId(item.category) === selectedCategory;
+        return getIds(item.category).includes(selectedCategory);
       })
       .map((item: any) => ({
         label: item.name,
@@ -153,7 +160,7 @@ const useLibraryManagementPage = (type: "category" | "sub-category" | "videos") 
       });
     } else if (isSubCategoryPage) {
       form.setFieldsValue({
-        category: getId(record.category),
+        category: getIds(record.category),
         name: record.name,
         img: record.img,
         description: record.description,

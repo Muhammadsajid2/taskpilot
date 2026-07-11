@@ -27,6 +27,13 @@ const getId = (value: any) => {
   return typeof value === "string" ? value : value._id || "";
 };
 
+const getIds = (value: any) => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.map((item) => getId(item)).filter(Boolean);
+  const id = getId(value);
+  return id ? [id] : [];
+};
+
 const formatDate = (value: string) => {
   if (!value) return "-";
 
@@ -119,10 +126,28 @@ const LibraryManagementPage = ({
           key: "name",
         },
         {
-          title: "Category",
+          title: "Categories",
           dataIndex: "category",
           key: "category",
-          render: (value: any) => value?.name || "-",
+          render: (value: any) => {
+            const items = Array.isArray(value) ? value : value ? [value] : [];
+
+            if (!items.length) return "-";
+
+            return (
+              <Space size={[6, 6]} wrap>
+                {items.map((item: any) => (
+                  <Tag
+                    key={getId(item) || item?.name}
+                    color="geekblue"
+                    style={{ borderRadius: 999 }}
+                  >
+                    {item?.name || item}
+                  </Tag>
+                ))}
+              </Space>
+            );
+          },
         },
         {
           title: "Image",
@@ -317,12 +342,13 @@ const LibraryManagementPage = ({
           {isSubCategoryPage && (
             <>
               <Form.Item
-                label="Category"
+                label="Categories"
                 name="category"
-                rules={[{ required: true, message: "Please select category" }]}
+                rules={[{ required: true, message: "Please select categories" }]}
               >
                 <Select
-                  placeholder="Select category"
+                  mode="multiple"
+                  placeholder="Select categories"
                   options={categoryOptions}
                   loading={isCategoryOptionsLoading}
                   showSearch
