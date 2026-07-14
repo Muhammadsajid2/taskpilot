@@ -20,6 +20,12 @@ import {
   getVideos,
   updateVideo,
 } from "../../../public/API/video";
+import {
+  createAlert,
+  deleteAlert,
+  getAlerts,
+  updateAlert,
+} from "../../../public/API/alert";
 import { deleteCategory } from "../../../public/API/category";
 
 const LIST_OPTIONS = {
@@ -47,6 +53,12 @@ const PAGE_COPY = {
     buttonLabel: "Create Video",
     emptyText: "No videos created yet.",
   },
+  alerts: {
+    title: "Alerts",
+    description: "Manage alert links and control which single alert is active.",
+    buttonLabel: "Create Alert",
+    emptyText: "No alerts created yet.",
+  },
 };
 
 const getId = (value: any) => {
@@ -63,13 +75,15 @@ const getIds = (value: any) => {
 
 const normalizeVideoPayload = (values: any) => ({
   ...values,
-  url: values.url
+  url: (values.url || "")
     .split(/\r?\n|,/)
     .map((item: string) => item.trim())
     .filter(Boolean),
 });
 
-const useLibraryManagementPage = (type: "category" | "sub-category" | "videos") => {
+const useLibraryManagementPage = (
+  type: "category" | "sub-category" | "videos" | "alerts",
+) => {
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<any>(null);
@@ -78,6 +92,7 @@ const useLibraryManagementPage = (type: "category" | "sub-category" | "videos") 
   const isCategoryPage = type === "category";
   const isSubCategoryPage = type === "sub-category";
   const isVideoPage = type === "videos";
+  const isAlertPage = type === "alerts";
   const pageCopy = PAGE_COPY[type];
 
   const categoryQuery = useQuery({
@@ -108,6 +123,10 @@ const useLibraryManagementPage = (type: "category" | "sub-category" | "videos") 
           ...LIST_OPTIONS,
           populate: "category",
         });
+      }
+
+      if (isAlertPage) {
+        return getAlerts(LIST_OPTIONS);
       }
 
       return getVideos({
@@ -152,6 +171,7 @@ const useLibraryManagementPage = (type: "category" | "sub-category" | "videos") 
     setEditingRecord(null);
     form.resetFields();
     form.setFieldValue("highlights", false);
+    form.setFieldValue("status", false);
     setIsModalOpen(true);
   };
 
@@ -171,6 +191,13 @@ const useLibraryManagementPage = (type: "category" | "sub-category" | "videos") 
         name: record.name,
         img: record.img,
         description: record.description,
+      });
+    } else if (isAlertPage) {
+      form.setFieldsValue({
+        label: record.label,
+        url: record.url,
+        thumbnail: record.thumbnail,
+        status: Boolean(record.status),
       });
     } else {
       form.setFieldsValue({
@@ -196,11 +223,13 @@ const useLibraryManagementPage = (type: "category" | "sub-category" | "videos") 
         if (isSubCategoryPage) {
           return updateSubCategory(editingRecord._id, payload);
         }
+        if (isAlertPage) return updateAlert(editingRecord._id, payload);
         return updateVideo(editingRecord._id, payload);
       }
 
       if (isCategoryPage) return createCategory(payload);
       if (isSubCategoryPage) return createSubCategory(payload);
+      if (isAlertPage) return createAlert(payload);
       return createVideo(payload);
     },
     onSuccess: async () => {
@@ -222,6 +251,7 @@ const useLibraryManagementPage = (type: "category" | "sub-category" | "videos") 
     mutationFn: async (id: string) => {
       if (isCategoryPage) return deleteCategory(id);
       if (isSubCategoryPage) return deleteSubCategory(id);
+      if (isAlertPage) return deleteAlert(id);
       return deleteVideo(id);
     },
     onSuccess: async () => {

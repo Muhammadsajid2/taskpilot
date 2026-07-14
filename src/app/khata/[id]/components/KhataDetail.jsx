@@ -25,7 +25,14 @@ export default function KhataDetail() {
   const type = Form.useWatch("type", form);
   const splitType = Form.useWatch("splitType", form);
   const splitMode = Form.useWatch("splitMode", form);
-  const refresh = async () => { await queryClient.invalidateQueries({ queryKey: ["khatas"] }); await queryClient.invalidateQueries({ queryKey: ["khata", id] }); };
+  const refresh = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["khatas"] }),
+      queryClient.refetchQueries({ queryKey: ["khata", id], exact: true }),
+      queryClient.refetchQueries({ queryKey: ["khata", id, "transactions"], exact: true }),
+      queryClient.refetchQueries({ queryKey: ["khata", id, "activities"], exact: true }),
+    ]);
+  };
   const transactionMutation = useMutation({
     mutationFn: (values) => {
       const payload = { ...values, amount: toMinor(values.amount), transactionDate: values.transactionDate?.toISOString() || new Date().toISOString() };
@@ -42,9 +49,9 @@ export default function KhataDetail() {
       delete payload.secondSplit;
       return editing ? updateKhataTransaction(id, editing._id, payload) : createKhataTransaction(id, payload);
     },
-    onSuccess: async () => { await refresh(); await queryClient.invalidateQueries({ queryKey: ["khata", id, "transactions"] }); await queryClient.invalidateQueries({ queryKey: ["khata", id, "activities"] }); form.resetFields(); setEditing(null); setOpen(false); },
+    onSuccess: async () => { await refresh(); form.resetFields(); setEditing(null); setOpen(false); },
   });
-  const archiveTransactionMutation = useMutation({ mutationFn: (transactionId) => archiveKhataTransaction(id, transactionId), onSuccess: async () => { await refresh(); await queryClient.invalidateQueries({ queryKey: ["khata", id, "transactions"] }); await queryClient.invalidateQueries({ queryKey: ["khata", id, "activities"] }); } });
+  const archiveTransactionMutation = useMutation({ mutationFn: (transactionId) => archiveKhataTransaction(id, transactionId), onSuccess: refresh });
   const archiveKhataMutation = useMutation({ mutationFn: () => archiveKhata(id), onSuccess: refresh });
   const participantOptions = (khata?.participants || []).map((participant) => ({ value: participant.userId, label: participant.name }));
   const openCreate = () => { setEditing(null); form.resetFields(); form.setFieldsValue({ type: "expense", splitType: "equal", splitMode: "amount", transactionDate: dayjs(), paidBy: khata?.participants?.[0]?.userId }); setOpen(true); };

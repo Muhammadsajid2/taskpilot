@@ -23,6 +23,8 @@ import {
   TagsOutlined,
   VideoCameraOutlined,
   WalletOutlined,
+  NotificationOutlined,
+  AlertOutlined,
   MoonOutlined,
   SunOutlined,
 } from "@ant-design/icons";
@@ -82,6 +84,16 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       key: "/khata",
       icon: <WalletOutlined />,
       label: <Link href="/khata">Khata</Link>,
+    },
+    {
+      key: "/notifications",
+      icon: <NotificationOutlined />,
+      label: <Link href="/notifications">Notifications</Link>,
+    },
+    {
+      key: "/alerts",
+      icon: <AlertOutlined />,
+      label: <Link href="/alerts">Alerts</Link>,
     },
   ];
 

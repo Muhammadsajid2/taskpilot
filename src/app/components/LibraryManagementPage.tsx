@@ -21,7 +21,7 @@ import { PlusOutlined } from "@ant-design/icons";
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 
-export type PageType = "category" | "sub-category" | "videos";
+export type PageType = "category" | "sub-category" | "videos" | "alerts";
 
 const getId = (value: any) => {
   if (!value) return "";
@@ -84,6 +84,7 @@ const LibraryManagementPage = ({
   const isCategoryPage = type === "category";
   const isSubCategoryPage = type === "sub-category";
   const isVideoPage = type === "videos";
+  const isAlertPage = type === "alerts";
 
   const columns = useMemo(() => {
     if (isCategoryPage) {
@@ -202,6 +203,59 @@ const LibraryManagementPage = ({
       ];
     }
 
+    if (isAlertPage) {
+      return [
+        {
+          title: "Label",
+          dataIndex: "label",
+          key: "label",
+        },
+        {
+          title: "URL",
+          dataIndex: "url",
+          key: "url",
+          render: renderExternalLink,
+        },
+        {
+          title: "Thumbnail",
+          dataIndex: "thumbnail",
+          key: "thumbnail",
+          render: renderExternalLink,
+        },
+        {
+          title: "Status",
+          dataIndex: "status",
+          key: "status",
+          render: (value: boolean) =>
+            value ? <Tag color="green">Active</Tag> : <Tag>Inactive</Tag>,
+        },
+        {
+          title: "Created",
+          dataIndex: "createdAt",
+          key: "createdAt",
+          render: formatDate,
+        },
+        {
+          title: "Action",
+          key: "action",
+          render: (_: unknown, record: any) => (
+            <Space>
+              <Button onClick={() => openEditModal(record)}>Edit</Button>
+              <Popconfirm
+                title="Delete alert?"
+                description="This action cannot be undone."
+                okText="Delete"
+                okButtonProps={{ danger: true, loading: isDeletePending }}
+                onConfirm={() => handleDelete(record)}
+              >
+                <Button danger>Delete</Button>
+              </Popconfirm>
+            </Space>
+          ),
+        },
+      ];
+    }
+
     return [
       {
         title: "Label",
@@ -286,6 +340,7 @@ const LibraryManagementPage = ({
     ];
   }, [
     handleDelete,
+    isAlertPage,
     isCategoryPage,
     isDeletePending,
     isSubCategoryPage,
@@ -297,11 +352,15 @@ const LibraryManagementPage = ({
       ? "Update Category"
       : isSubCategoryPage
         ? "Update Sub Category"
+        : isAlertPage
+          ? "Update Alert"
         : "Update Video"
     : isCategoryPage
       ? "Create Category"
       : isSubCategoryPage
         ? "Create Sub Category"
+        : isAlertPage
+          ? "Create Alert"
         : "Create Video";
 
   return (
@@ -357,7 +416,7 @@ const LibraryManagementPage = ({
           form={form}
           layout="vertical"
           onFinish={handleSubmit}
-          initialValues={{ highlights: false }}
+          initialValues={{ highlights: false, status: false }}
         >
           {isCategoryPage && (
             <>
@@ -465,8 +524,7 @@ const LibraryManagementPage = ({
               <Form.Item
                 label="Video URLs"
                 name="url"
-                rules={[{ required: true, message: "Please enter at least one video URL" }]}
-                extra="Add one URL per line or separate multiple URLs with commas."
+                extra="Optional. Add one URL per line or separate multiple URLs with commas."
               >
                 <TextArea
                   rows={4}
@@ -481,6 +539,35 @@ const LibraryManagementPage = ({
                 name="highlights"
                 valuePropName="checked"
               >
+                <Switch />
+              </Form.Item>
+            </>
+          )}
+
+          {isAlertPage && (
+            <>
+              <Form.Item
+                label="Label"
+                name="label"
+                rules={[{ required: true, message: "Please enter alert label" }]}
+              >
+                <Input placeholder="Enter alert label" />
+              </Form.Item>
+              <Form.Item
+                label="URL"
+                name="url"
+                rules={[{ required: true, message: "Please enter alert URL" }]}
+              >
+                <Input placeholder="https://example.com/alert-link" />
+              </Form.Item>
+              <Form.Item
+                label="Thumbnail URL"
+                name="thumbnail"
+                rules={[{ required: true, message: "Please enter thumbnail URL" }]}
+              >
+                <Input placeholder="https://example.com/alert-thumbnail.png" />
+              </Form.Item>
+              <Form.Item label="Active Status" name="status" valuePropName="checked">
                 <Switch />
               </Form.Item>
             </>
