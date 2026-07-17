@@ -149,11 +149,14 @@ const useLibraryManagementPage = (
 
   const subCategoryOptions = useMemo(() => {
     const items = subCategoryQuery.data?.data || [];
+    const selectedCategoryIds = getIds(selectedCategory);
 
     return items
       .filter((item: any) => {
-        if (!selectedCategory) return true;
-        return getIds(item.category).includes(selectedCategory);
+        if (!selectedCategoryIds.length) return true;
+        return getIds(item.category).some((categoryId) =>
+          selectedCategoryIds.includes(categoryId),
+        );
       })
       .map((item: any) => ({
         label: item.name,
@@ -202,8 +205,8 @@ const useLibraryManagementPage = (
     } else {
       form.setFieldsValue({
         label: record.label,
-        category: getId(record.category),
-        subCategory: (record.subCategory || []).map((item: any) => getId(item)),
+        category: getIds(record.category),
+        subCategory: getIds(record.subCategory),
         img: record.img,
         url: (record.url || []).join("\n"),
         description: record.description,
@@ -271,8 +274,18 @@ const useLibraryManagementPage = (
     saveMutation.mutate(values);
   };
 
-  const handleCategoryChange = () => {
-    form.setFieldValue("subCategory", []);
+  const handleCategoryChange = (categoryIds: string[]) => {
+    const selectedSubCategoryIds = getIds(form.getFieldValue("subCategory"));
+    const availableSubCategoryIds = (subCategoryQuery.data?.data || [])
+      .filter((item: any) =>
+        getIds(item.category).some((categoryId) => categoryIds.includes(categoryId)),
+      )
+      .map((item: any) => item._id);
+
+    form.setFieldValue(
+      "subCategory",
+      selectedSubCategoryIds.filter((id) => availableSubCategoryIds.includes(id)),
+    );
   };
 
   const handleDelete = (record: any) => {

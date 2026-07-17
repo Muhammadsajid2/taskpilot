@@ -263,10 +263,28 @@ const LibraryManagementPage = ({
         key: "label",
       },
       {
-        title: "Category",
+        title: "Categories",
         dataIndex: "category",
         key: "category",
-        render: (value: any) => value?.name || "-",
+        render: (value: any) => {
+          const items = Array.isArray(value) ? value : value ? [value] : [];
+
+          if (!items.length) return "-";
+
+          return (
+            <Space size={[6, 6]} wrap>
+              {items.map((item: any) => (
+                <Tag
+                  key={getId(item) || item?.name}
+                  color="geekblue"
+                  style={{ borderRadius: 999 }}
+                >
+                  {item?.name || item}
+                </Tag>
+              ))}
+            </Space>
+          );
+        },
       },
       {
         title: "Sub Categories",
@@ -486,12 +504,13 @@ const LibraryManagementPage = ({
                 <Input placeholder="Enter video label" />
               </Form.Item>
               <Form.Item
-                label="Category"
+                label="Categories"
                 name="category"
-                rules={[{ required: true, message: "Please select category" }]}
+                rules={[{ required: true, message: "Please select categories" }]}
               >
                 <Select
-                  placeholder="Select category"
+                  mode="multiple"
+                  placeholder="Select categories"
                   options={categoryOptions}
                   loading={isCategoryOptionsLoading}
                   showSearch
@@ -503,7 +522,7 @@ const LibraryManagementPage = ({
                 label="Sub Categories"
                 name="subCategory"
                 rules={[{ required: true, message: "Please select sub categories" }]}
-                extra="You can select multiple sub categories for one video."
+                extra="Options are shown for the selected categories. You can select multiple sub categories."
               >
                 <Select
                   mode="multiple"
