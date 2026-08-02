@@ -1,0 +1,6 @@
+.formSide { order: 2; }
+.visualSide { order: 1; }
+@media (max-width: 800px) {
+  .formSide { order: 1; }
+  .visualSide { order: 2; }
+}

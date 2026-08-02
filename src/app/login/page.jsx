@@ -1,14 +1,10 @@
 "use client";
 
-import { Form, Input, Button, Typography, Flex, Divider, theme } from "antd";
-import {
-  MailOutlined,
-  LockOutlined,
-  GoogleOutlined,
-  GithubOutlined,
-} from "@ant-design/icons";
-import useLogin from "./hooks/useLogin";
+import { Button, Form, Input, Typography } from "antd";
+import { ArrowRightOutlined, LockOutlined, MailOutlined, SafetyCertificateOutlined } from "@ant-design/icons";
 import Link from "next/link";
+import useLogin from "./hooks/useLogin";
+const styles = new Proxy({}, { get: (_target, key) => String(key) });
 
 const { Title, Text } = Typography;
 
@@ -16,160 +12,41 @@ export default function LoginForm() {
   const { onFinish, isUserLoginLoading } = useLogin();
 
   return (
-    <Flex
-      justify="center"
-      align="center"
-      style={{ minHeight: "100dvh", padding: "16px" }}
-    >
-      <div
-        className="glass-card animate-slide-up"
-        style={{ width: "100%", maxWidth: "400px", padding: "16px 16px" }}
-      >
-        <Flex vertical align="center" gap={2} style={{ marginBottom: "12px" }}>
-          <div
-            style={{
-              width: "40px",
-              height: "40px",
-              background: "var(--primary-gradient)",
-              borderRadius: "10px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: "4px",
-              boxShadow: "0 0 20px rgba(59, 130, 246, 0.5)",
-            }}
-          >
-            <Title level={4} style={{ margin: 0, color: "white" }}>
-              TP
-            </Title>
+    <main className={styles.authPage}>
+      <div className={styles.orbOne} /><div className={styles.orbTwo} />
+      <Link href="/" className={styles.brand}><span>TP</span>Task Pilot</Link>
+      <section className={styles.authShell}>
+        <div className={styles.formSide}>
+          <div className={styles.formInner}>
+            <span className={styles.eyebrow}><i />WELCOME BACK</span>
+            <Title level={1} className={styles.title}>Back to your<br /><em>best work.</em></Title>
+            <Text className={styles.subtitle}>Sign in to keep your tasks, updates, and priorities moving.</Text>
+            <Form name="login_form" layout="vertical" onFinish={onFinish} requiredMark={false} className={styles.form}>
+              <Form.Item label="Email address" name="email" rules={[{ required: true, type: "email", message: "Enter a valid email address" }]}>
+                <Input prefix={<MailOutlined />} placeholder="name@company.com" size="large" autoComplete="email" />
+              </Form.Item>
+              <Form.Item label={<span className={styles.passwordLabel}>Password <Link href="#">Forgot password?</Link></span>} name="password" rules={[{ required: true, message: "Enter your password" }]}>
+                <Input.Password prefix={<LockOutlined />} placeholder="Enter your password" size="large" autoComplete="current-password" />
+              </Form.Item>
+              <Button type="primary" htmlType="submit" block size="large" loading={isUserLoginLoading} className={styles.submitButton}>
+                Sign in to Task Pilot <ArrowRightOutlined />
+              </Button>
+            </Form>
+            <p className={styles.switchText}>New to Task Pilot? <Link href="/signup">Create an account</Link></p>
           </div>
-          <Title level={3} className="gradient-text" style={{ margin: 0 }}>
-            Welcome Back
-          </Title>
-          <Text type="secondary">Sign in to continue to Task Pilot</Text>
-        </Flex>
-
-        <Form
-          name="login_form"
-          layout="vertical"
-          onFinish={onFinish}
-          requiredMark={false}
-          style={{ marginBottom: "0" }}
-        >
-          <Form.Item
-            label={
-              <Text style={{ color: "var(--text-dim)", fontSize: "12px" }}>
-                Email
-              </Text>
-            }
-            name="email"
-            style={{ marginBottom: "12px" }}
-            rules={[
-              {
-                required: true,
-                type: "email",
-                message: "Please enter a valid email!",
-              },
-            ]}
-          >
-            <Input
-              prefix={<MailOutlined style={{ color: "var(--text-dim)" }} />}
-              placeholder="name@company.com"
-              size="large"
-            />
-          </Form.Item>
-
-          <Form.Item
-            label={
-              <Flex justify="space-between" style={{ width: "100%" }}>
-                <Text style={{ color: "var(--text-dim)", fontSize: "12px" }}>
-                  Password
-                </Text>
-                <Link
-                  href="#"
-                  style={{ fontSize: "11px", color: "var(--primary)" }}
-                >
-                  Forgot?
-                </Link>
-              </Flex>
-            }
-            name="password"
-            style={{ marginBottom: "16px" }}
-            rules={[{ required: true, message: "Please enter your password!" }]}
-          >
-            <Input.Password
-              prefix={<LockOutlined style={{ color: "var(--text-dim)" }} />}
-              placeholder="••••••••"
-              size="large"
-            />
-          </Form.Item>
-
-          <Form.Item style={{ marginBottom: "8px" }}>
-            <Button
-              type="primary"
-              block
-              htmlType="submit"
-              size="large"
-              loading={isUserLoginLoading}
-              style={{
-                height: "42px",
-                fontWeight: 600,
-                marginTop: "0px",
-                background: "linear-gradient(to right, #3b82f6, #2563eb)",
-                border: "none",
-              }}
-            >
-              Log In
-            </Button>
-          </Form.Item>
-        </Form>
-
-        <Divider
-          plain
-          style={{ borderColor: "rgba(255,255,255,0.1)", margin: "8px 0" }}
-        >
-          <Text style={{ color: "#64748b", fontSize: "12px" }}>
-            OR CONTINUE WITH
-          </Text>
-        </Divider>
-
-        <Flex gap={8}>
-          <Button
-            block
-            icon={<GoogleOutlined />}
-            size="large"
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.1)",
-            }}
-          >
-            Google
-          </Button>
-          <Button
-            block
-            icon={<GithubOutlined />}
-            size="large"
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.1)",
-            }}
-          >
-            GitHub
-          </Button>
-        </Flex>
-
-        <Flex justify="center" style={{ marginTop: "12px" }}>
-          <Text style={{ color: "var(--text-dim)" }}>
-            Don't have an account?{" "}
-            <Link
-              href="/signup"
-              style={{ color: "var(--primary)", fontWeight: 600 }}
-            >
-              Sign up
-            </Link>
-          </Text>
-        </Flex>
-      </div>
-    </Flex>
+        </div>
+        <aside className={styles.visualSide} aria-label="Task Pilot workspace preview">
+          <div className={styles.visualCopy}><span>STAY IN CONTROL</span><h2>Your focus,<br />beautifully <em>organized.</em></h2></div>
+          <div className={styles.workspace3d}>
+            <div className={styles.workspaceTop}><b>Today&apos;s focus</b><span>3 tasks</span></div>
+            <div className={styles.workspaceTask}><i className={styles.done} /><div><b>Plan the week ahead</b><small>High priority · 10:00 AM</small></div><span>•••</span></div>
+            <div className={styles.workspaceTask}><i /><div><b>Review new content</b><small>In progress · 2:30 PM</small></div><span>•••</span></div>
+            <div className={styles.workspaceTask}><i /><div><b>Send client update</b><small>Scheduled · 4:00 PM</small></div><span>•••</span></div>
+            <div className={styles.workspaceFooter}><div><small>WEEKLY PROGRESS</small><b>72% complete</b></div><div className={styles.ring}>72</div></div>
+          </div>
+          <div className={styles.floatingBadge}><SafetyCertificateOutlined /><span><b>Everything in sync</b><small>One workspace. Clear momentum.</small></span></div>
+        </aside>
+      </section>
+    </main>
   );
 }

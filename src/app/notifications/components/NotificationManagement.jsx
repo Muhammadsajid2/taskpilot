@@ -1,19 +1,37 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Card, Col, Form, Input, Radio, Row, Select, Space, Table, Tag, Typography } from "antd";
+import { Button, Card, Col, Form, Input, Radio, Row, Select, Space, Table, Tag, Tooltip, Typography } from "antd";
 import { NotificationOutlined, SendOutlined } from "@ant-design/icons";
 import { getNotificationCampaigns, getPushDevices, sendPushNotification } from "../../../../public/API/pushNotifications";
 
 const { Title, Text } = Typography;
+const DEVICE_PAGE_SIZE = 6;
+const CAMPAIGN_PAGE_SIZE = 10;
+
+const shorten = (value, start = 14, end = 8) => !value || value.length <= start + end + 1 ? value : `${value.slice(0, start)}…${value.slice(-end)}`;
+const formatDate = (value) => value ? new Intl.DateTimeFormat("en-PK", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : "—";
 
 export default function NotificationManagement() {
   const [form] = Form.useForm();
+  const [devicePagination, setDevicePagination] = useState({ current: 1, pageSize: DEVICE_PAGE_SIZE });
+  const [campaignPagination, setCampaignPagination] = useState({ current: 1, pageSize: CAMPAIGN_PAGE_SIZE });
   const targetType = Form.useWatch("targetType", form) || "all";
   const queryClient = useQueryClient();
-  const devicesQuery = useQuery({ queryKey: ["push-devices"], queryFn: getPushDevices });
-  const campaignsQuery = useQuery({ queryKey: ["notification-campaigns"], queryFn: getNotificationCampaigns });
+  const devicesQuery = useQuery({
+    queryKey: ["push-devices", devicePagination.current, devicePagination.pageSize],
+    queryFn: () => getPushDevices({ page: devicePagination.current, size: devicePagination.pageSize }),
+  });
+  const campaignsQuery = useQuery({
+    queryKey: ["notification-campaigns", campaignPagination.current, campaignPagination.pageSize],
+    queryFn: () => getNotificationCampaigns({ page: campaignPagination.current, size: campaignPagination.pageSize }),
+  });
+  const devices = devicesQuery.data?.data || [];
+  const deviceTotal = devicesQuery.data?.total || 0;
+  const campaigns = campaignsQuery.data?.data || [];
+  const campaignTotal = campaignsQuery.data?.total || 0;
+
   const sendMutation = useMutation({
     mutationFn: sendPushNotification,
     onSuccess: async () => {
@@ -22,12 +40,49 @@ export default function NotificationManagement() {
       await queryClient.invalidateQueries({ queryKey: ["notification-campaigns"] });
     },
   });
-  const deviceOptions = useMemo(() => (devicesQuery.data || []).filter((device) => device.enabled).map((device) => ({ value: device._id, label: `${device.deviceName || device.deviceId} (${device.platform})` })), [devicesQuery.data]);
-  const columns = [
-    { title: "Title", dataIndex: "title" },
-    { title: "Audience", key: "audience", render: (_, item) => <Tag color={item.targetType === "all" ? "blue" : item.targetType === "devices" ? "purple" : "green"}>{item.targetType === "all" ? "All devices" : item.topic || "Selected devices"}</Tag> },
-    { title: "Sent", key: "sent", render: (_, item) => item.targetType === "devices" ? `${item.sentCount} sent, ${item.failureCount} failed` : "Submitted to Firebase" },
-    { title: "Created", dataIndex: "createdAt", render: (value) => new Intl.DateTimeFormat("en-PK", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) },
+
+  const deviceOptions = useMemo(
+    () => devices.filter((device) => device.enabled).map((device) => ({
+      value: device._id,
+      label: `${shorten(device.deviceName || device.deviceId || "Unknown device", 18, 6)} (${device.platform})`,
+    })),
+    [devices],
+  );
+
+  const updateDevicePagination = (current, pageSize) => setDevicePagination((previous) => ({
+    current: pageSize !== previous.pageSize ? 1 : current,
+    pageSize,
+  }));
+  const updateCampaignPagination = (current, pageSize) => setCampaignPagination((previous) => ({
+    current: pageSize !== previous.pageSize ? 1 : current,
+    pageSize,
+  }));
+
+  const deviceColumns = [
+    {
+      title: "Device",
+      key: "device",
+      width: 250,
+      render: (_, device) => {
+        const identifier = device.deviceName || device.deviceId || "Unknown device";
+        return <Tooltip title={identifier}><Text ellipsis style={{ display: "block", maxWidth: 220 }}>{shorten(identifier)}</Text></Tooltip>;
+      },
+    },
+    { title: "Platform", dataIndex: "platform", width: 96, render: (platform) => <Tag>{platform || "—"}</Tag> },
+    { title: "Status", dataIndex: "enabled", width: 88, render: (enabled) => <Tag color={enabled ? "green" : "default"}>{enabled ? "Active" : "Disabled"}</Tag> },
+    { title: "Last seen", dataIndex: "lastSeenAt", width: 130, render: (value) => <Text style={{ whiteSpace: "nowrap" }}>{formatDate(value)}</Text> },
+  ];
+
+  const campaignColumns = [
+    { title: "Title", dataIndex: "title", width: 240, ellipsis: true },
+    {
+      title: "Audience",
+      key: "audience",
+      width: 180,
+      render: (_, item) => <Tag color={item.targetType === "all" ? "blue" : item.targetType === "devices" ? "purple" : "green"}>{item.targetType === "all" ? "All devices" : item.topic || "Selected devices"}</Tag>,
+    },
+    { title: "Sent", key: "sent", width: 160, render: (_, item) => item.targetType === "devices" ? `${item.sentCount} sent, ${item.failureCount} failed` : "Submitted to Firebase" },
+    { title: "Created", dataIndex: "createdAt", width: 190, render: formatDate },
   ];
 
   return <div style={{ maxWidth: 1280, margin: "0 auto" }}>
@@ -44,8 +99,8 @@ export default function NotificationManagement() {
         {sendMutation.error ? <Text type="danger">{sendMutation.error.message || "Unable to send notification."}</Text> : null}
         <Button type="primary" htmlType="submit" icon={<SendOutlined />} loading={sendMutation.isPending}>Send notification</Button>
       </Form></Card></Col>
-      <Col xs={24} lg={12}><Card className="glass-card" variant="borderless" title="Registered devices"><Table rowKey="_id" size="small" loading={devicesQuery.isLoading} dataSource={devicesQuery.data || []} pagination={{ pageSize: 6 }} columns={[{ title: "Device", key: "device", render: (_, item) => item.deviceName || item.deviceId }, { title: "Platform", dataIndex: "platform" }, { title: "Status", dataIndex: "enabled", render: (enabled) => <Tag color={enabled ? "green" : "default"}>{enabled ? "Active" : "Disabled"}</Tag> }, { title: "Last seen", dataIndex: "lastSeenAt", render: (value) => new Date(value).toLocaleDateString() }]} /></Card></Col>
+      <Col xs={24} lg={12}><Card className="glass-card" variant="borderless" title="Registered devices"><Table rowKey="_id" size="small" loading={devicesQuery.isLoading} dataSource={devices} columns={deviceColumns} tableLayout="fixed" scroll={{ x: 564 }} pagination={{ ...devicePagination, total: deviceTotal, showSizeChanger: true, pageSizeOptions: ["6", "10", "20", "50"], showQuickJumper: false, hideOnSinglePage: false, position: ["bottomCenter"], onChange: updateDevicePagination }} /></Card></Col>
     </Row>
-    <Card className="glass-card" variant="borderless" title="Notification history" style={{ marginTop: 24 }}><Table rowKey="_id" loading={campaignsQuery.isLoading} dataSource={campaignsQuery.data || []} columns={columns} pagination={{ pageSize: 10 }} scroll={{ x: 800 }} /></Card>
+    <Card className="glass-card" variant="borderless" title="Notification history" style={{ marginTop: 24 }}><Table rowKey="_id" loading={campaignsQuery.isLoading} dataSource={campaigns} columns={campaignColumns} tableLayout="fixed" scroll={{ x: 770 }} pagination={{ ...campaignPagination, total: campaignTotal, showSizeChanger: true, pageSizeOptions: ["10", "20", "50", "100"], showQuickJumper: false, hideOnSinglePage: false, position: ["bottomCenter"], onChange: updateCampaignPagination }} /></Card>
   </div>;
 }
