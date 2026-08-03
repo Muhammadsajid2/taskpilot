@@ -9,9 +9,23 @@ import { getNotificationCampaigns, getPushDevices, sendPushNotification } from "
 const { Title, Text } = Typography;
 const DEVICE_PAGE_SIZE = 6;
 const CAMPAIGN_PAGE_SIZE = 10;
+const TABLE_SCROLL_HEIGHT = 420;
 
 const shorten = (value, start = 14, end = 8) => !value || value.length <= start + end + 1 ? value : `${value.slice(0, start)}…${value.slice(-end)}`;
 const formatDate = (value) => value ? new Intl.DateTimeFormat("en-PK", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : "—";
+const getPaginatedData = (response) => {
+  // `request` normally returns the API body, but some deployments wrap it in
+  // an additional `data` object. Unwrap that envelope before handing rows to AntD.
+  const payload = Array.isArray(response?.data) || Array.isArray(response)
+    ? response
+    : response?.data ?? response?.result ?? response?.payload;
+  const rows = Array.isArray(payload) ? payload : payload?.data;
+
+  return {
+    data: Array.isArray(rows) ? rows : [],
+    total: payload?.total ?? response?.total ?? (Array.isArray(rows) ? rows.length : 0),
+  };
+};
 
 export default function NotificationManagement() {
   const [form] = Form.useForm();
@@ -27,10 +41,8 @@ export default function NotificationManagement() {
     queryKey: ["notification-campaigns", campaignPagination.current, campaignPagination.pageSize],
     queryFn: () => getNotificationCampaigns({ page: campaignPagination.current, size: campaignPagination.pageSize }),
   });
-  const devices = devicesQuery.data?.data || [];
-  const deviceTotal = devicesQuery.data?.total || 0;
-  const campaigns = campaignsQuery.data?.data || [];
-  const campaignTotal = campaignsQuery.data?.total || 0;
+  const { data: devices, total: deviceTotal } = getPaginatedData(devicesQuery.data);
+  const { data: campaigns, total: campaignTotal } = getPaginatedData(campaignsQuery.data);
 
   const sendMutation = useMutation({
     mutationFn: sendPushNotification,
@@ -87,8 +99,8 @@ export default function NotificationManagement() {
 
   return <div style={{ maxWidth: 1280, margin: "0 auto" }}>
     <div className="animate-fade-in"><Title level={2} className="gradient-text" style={{ marginBottom: 4 }}>Push Notifications</Title><Text style={{ color: "var(--text-dim)" }}>Send a Firebase notification to every phone, a topic, or selected devices.</Text></div>
-    <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
-      <Col xs={24} lg={12}><Card className="glass-card" variant="borderless" title={<Space><NotificationOutlined /> Create notification</Space>}><Form form={form} layout="vertical" initialValues={{ targetType: "all" }} onFinish={(values) => sendMutation.mutate(values)}>
+    <Row gutter={[24, 24]} align="stretch" style={{ marginTop: 24 }}>
+      <Col xs={24} lg={12} style={{ display: "flex" }}><Card className="glass-card" variant="borderless" title={<Space><NotificationOutlined /> Create notification</Space>} style={{ width: "100%", height: "100%" }}><Form form={form} layout="vertical" initialValues={{ targetType: "all" }} onFinish={(values) => sendMutation.mutate(values)}>
         <Form.Item name="title" label="Title" rules={[{ required: true, message: "Enter a notification title" }]}><Input maxLength={120} placeholder="New live stream" /></Form.Item>
         <Form.Item name="body" label="Message" rules={[{ required: true, message: "Enter a message" }]}><Input.TextArea rows={4} maxLength={1000} placeholder="A new cricket stream is now available." /></Form.Item>
         <Form.Item name="targetType" label="Send to"><Radio.Group optionType="button" buttonStyle="solid" options={[{ label: "All devices", value: "all" }, { label: "Topic", value: "topic" }, { label: "Specific devices", value: "devices" }]} /></Form.Item>
@@ -99,8 +111,8 @@ export default function NotificationManagement() {
         {sendMutation.error ? <Text type="danger">{sendMutation.error.message || "Unable to send notification."}</Text> : null}
         <Button type="primary" htmlType="submit" icon={<SendOutlined />} loading={sendMutation.isPending}>Send notification</Button>
       </Form></Card></Col>
-      <Col xs={24} lg={12}><Card className="glass-card" variant="borderless" title="Registered devices"><Table rowKey="_id" size="small" loading={devicesQuery.isLoading} dataSource={devices} columns={deviceColumns} tableLayout="fixed" scroll={{ x: 564 }} pagination={{ ...devicePagination, total: deviceTotal, showSizeChanger: true, pageSizeOptions: ["6", "10", "20", "50"], showQuickJumper: false, hideOnSinglePage: false, position: ["bottomCenter"], onChange: updateDevicePagination }} /></Card></Col>
+      <Col xs={24} lg={12} style={{ display: "flex" }}><Card className="glass-card" variant="borderless" title="Registered devices" style={{ width: "100%", height: "100%" }}><Table className="notification-table" rowKey="_id" size="middle" loading={devicesQuery.isLoading} dataSource={devices} columns={deviceColumns} tableLayout="fixed" scroll={{ x: 564, y: TABLE_SCROLL_HEIGHT }} pagination={{ ...devicePagination, total: deviceTotal, showSizeChanger: true, pageSizeOptions: ["6", "10", "20", "50", "100"], showQuickJumper: false, hideOnSinglePage: false, position: ["bottomCenter"], onChange: updateDevicePagination }} /></Card></Col>
     </Row>
-    <Card className="glass-card" variant="borderless" title="Notification history" style={{ marginTop: 24 }}><Table rowKey="_id" loading={campaignsQuery.isLoading} dataSource={campaigns} columns={campaignColumns} tableLayout="fixed" scroll={{ x: 770 }} pagination={{ ...campaignPagination, total: campaignTotal, showSizeChanger: true, pageSizeOptions: ["10", "20", "50", "100"], showQuickJumper: false, hideOnSinglePage: false, position: ["bottomCenter"], onChange: updateCampaignPagination }} /></Card>
+    <Card className="glass-card" variant="borderless" title="Notification history" style={{ marginTop: 24 }}><Table className="notification-table" rowKey="_id" size="middle" loading={campaignsQuery.isLoading} dataSource={campaigns} columns={campaignColumns} tableLayout="fixed" scroll={{ x: 770, y: TABLE_SCROLL_HEIGHT }} pagination={{ ...campaignPagination, total: campaignTotal, showSizeChanger: true, pageSizeOptions: ["10", "20", "50", "100"], showQuickJumper: false, hideOnSinglePage: false, position: ["bottomCenter"], onChange: updateCampaignPagination }} /></Card>
   </div>;
 }
