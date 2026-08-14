@@ -78,7 +78,6 @@ const LibraryManagementPage = ({
   openEditModal,
   closeModal,
   handleSubmit,
-  handleCategoryChange,
   handleDelete,
 }: any) => {
   const isCategoryPage = type === "category";
@@ -261,30 +260,6 @@ const LibraryManagementPage = ({
         title: "Label",
         dataIndex: "label",
         key: "label",
-      },
-      {
-        title: "Categories",
-        dataIndex: "category",
-        key: "category",
-        render: (value: any) => {
-          const items = Array.isArray(value) ? value : value ? [value] : [];
-
-          if (!items.length) return "-";
-
-          return (
-            <Space size={[6, 6]} wrap>
-              {items.map((item: any) => (
-                <Tag
-                  key={getId(item) || item?.name}
-                  color="geekblue"
-                  style={{ borderRadius: 999 }}
-                >
-                  {item?.name || item}
-                </Tag>
-              ))}
-            </Space>
-          );
-        },
       },
       {
         title: "Sub Categories",
@@ -504,25 +479,10 @@ const LibraryManagementPage = ({
                 <Input placeholder="Enter video label" />
               </Form.Item>
               <Form.Item
-                label="Categories"
-                name="category"
-                rules={[{ required: true, message: "Please select categories" }]}
-              >
-                <Select
-                  mode="multiple"
-                  placeholder="Select categories"
-                  options={categoryOptions}
-                  loading={isCategoryOptionsLoading}
-                  showSearch
-                  optionFilterProp="label"
-                  onChange={handleCategoryChange}
-                />
-              </Form.Item>
-              <Form.Item
                 label="Sub Categories"
                 name="subCategory"
                 rules={[{ required: true, message: "Please select sub categories" }]}
-                extra="Options are shown for the selected categories. You can select multiple sub categories."
+                extra="You can select multiple sub categories."
               >
                 <Select
                   mode="multiple"

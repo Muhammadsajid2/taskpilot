@@ -49,7 +49,7 @@ const PAGE_COPY = {
   },
   videos: {
     title: "Videos",
-    description: "Manage video records, category mapping, and sub category links.",
+    description: "Manage video records and sub category links.",
     buttonLabel: "Create Video",
     emptyText: "No videos created yet.",
   },
@@ -98,7 +98,7 @@ const useLibraryManagementPage = (
   const categoryQuery = useQuery({
     queryKey: ["categories", "options"],
     queryFn: () => getCategory(LIST_OPTIONS),
-    enabled: isSubCategoryPage || isVideoPage,
+    enabled: isSubCategoryPage,
   });
 
   const subCategoryQuery = useQuery({
@@ -136,8 +136,6 @@ const useLibraryManagementPage = (
     },
   });
 
-  const selectedCategory = Form.useWatch("category", form);
-
   const categoryOptions = useMemo(
     () =>
       (categoryQuery.data?.data || []).map((item: any) => ({
@@ -149,20 +147,12 @@ const useLibraryManagementPage = (
 
   const subCategoryOptions = useMemo(() => {
     const items = subCategoryQuery.data?.data || [];
-    const selectedCategoryIds = getIds(selectedCategory);
 
-    return items
-      .filter((item: any) => {
-        if (!selectedCategoryIds.length) return true;
-        return getIds(item.category).some((categoryId) =>
-          selectedCategoryIds.includes(categoryId),
-        );
-      })
-      .map((item: any) => ({
-        label: item.name,
-        value: item._id,
-      }));
-  }, [selectedCategory, subCategoryQuery.data]);
+    return items.map((item: any) => ({
+      label: item.name,
+      value: item._id,
+    }));
+  }, [subCategoryQuery.data]);
 
   const closeModal = () => {
     form.resetFields();
@@ -205,7 +195,6 @@ const useLibraryManagementPage = (
     } else {
       form.setFieldsValue({
         label: record.label,
-        category: getIds(record.category),
         subCategory: getIds(record.subCategory),
         img: record.img,
         url: (record.url || []).join("\n"),
@@ -271,21 +260,23 @@ const useLibraryManagementPage = (
   });
 
   const handleSubmit = (values: any) => {
-    saveMutation.mutate(values);
-  };
+    if (!isVideoPage) {
+      saveMutation.mutate(values);
+      return;
+    }
 
-  const handleCategoryChange = (categoryIds: string[]) => {
-    const selectedSubCategoryIds = getIds(form.getFieldValue("subCategory"));
-    const availableSubCategoryIds = (subCategoryQuery.data?.data || [])
-      .filter((item: any) =>
-        getIds(item.category).some((categoryId) => categoryIds.includes(categoryId)),
-      )
-      .map((item: any) => item._id);
-
-    form.setFieldValue(
-      "subCategory",
-      selectedSubCategoryIds.filter((id) => availableSubCategoryIds.includes(id)),
+    const selectedSubCategoryIds = getIds(values.subCategory);
+    const category = Array.from(
+      new Set(
+        (subCategoryQuery.data?.data || []).flatMap((subCategory: any) =>
+          selectedSubCategoryIds.includes(subCategory._id)
+            ? getIds(subCategory.category)
+            : [],
+        ),
+      ),
     );
+
+    saveMutation.mutate({ ...values, category });
   };
 
   const handleDelete = (record: any) => {
@@ -312,7 +303,6 @@ const useLibraryManagementPage = (
     openEditModal,
     closeModal,
     handleSubmit,
-    handleCategoryChange,
     handleDelete,
   };
 };
